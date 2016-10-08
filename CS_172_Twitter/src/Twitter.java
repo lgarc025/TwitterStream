@@ -23,12 +23,12 @@ public class Twitter {
 		
 		TwitterStream twitterStream = new TwitterStreamFactory(config).getInstance();
 		System.out.println(twitterStream);
-		//TweetListener listener = new TweetListener(); 
-		//twitterStream.addListener(listener);
-		//twitterStream.sample("en");
+		TweetListener listener = new TweetListener(); 
+		twitterStream.addListener(listener);
+		twitterStream.sample("en");
 		
-		//double[][] boundingbox = {{-124.47,24.0},{-66.56,49.3843}}; 
-		//FilterQuery filter = new FilterQuery(); filter.locations(boundingbox);
-		//twitterStream.filter(filter);
+		double[][] boundingbox = {{-124.47,24.0},{-66.56,49.3843}}; 
+		FilterQuery filter = new FilterQuery(); filter.locations(boundingbox);
+		twitterStream.filter(filter);
 	}
 }
