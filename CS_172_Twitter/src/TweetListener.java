@@ -83,8 +83,8 @@ public class TweetListener implements StatusListener {
 	{
 		//TweetID
 		long IDValue = status.getId();
-		TweetHash.add(IDValue);
 		
+		//Clear Hash After 5000
 		if(TweetHash.size() == 5000)
 		{
 			//Empty the Hash
@@ -94,6 +94,7 @@ public class TweetListener implements StatusListener {
 		if (TweetHash.contains(IDValue))
 		{
 			System.out.print("In Hash");
+			return true;
 		}
 		else
 		{
