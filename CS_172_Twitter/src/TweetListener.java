@@ -24,11 +24,88 @@ import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
 import twitter4j.StatusListener;
+import java.util.Date;
+import java.util.HashSet;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 public class TweetListener implements StatusListener { 
 	
 	
 	public List <Tweet> TweetList = new ArrayList<Tweet>();
+	public HashSet TweetHash = new HashSet();
+	
+	public void AddTweetToList (Status status)
+	{
+		String A = status.getUser().getScreenName();
+    	String B = status.getText();
+    	GeoLocation C = status.getGeoLocation();
+    	long D = status.getId();
+    	
+    	Tweet obj = new Tweet(A, B, C, D );
+    	TweetList.add(obj);
+	}
+	
+	public void PrintTweetsToFile ()
+	{
+		DateFormat dateFormat = new SimpleDateFormat("MM_dd_yyyy_HH_mm_ss");
+	 	//get current date time with Date()
+	 	Date date = new Date();
+	 	String CurDate = dateFormat.format(date);
+	 	  
+	 	   
+		ObjectMapper objectMapper = new ObjectMapper();
+		//Set pretty printing of json
+    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+    	String arrayToJson = null;
+		try {
+				arrayToJson = objectMapper.writeValueAsString(TweetList);
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		ObjectWriter writer = objectMapper.writer(new DefaultPrettyPrinter());
+		try {
+			writer.writeValue(new File("Twitter_"+"File_"+CurDate+".txt"), arrayToJson);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//Empty the List After Written To File
+		TweetList.clear();
+	
+	}
+	
+	//Return true if Tweet exists false otherwise
+	public Boolean DuplicateTweetCheck (Status status)
+	{
+		//TweetID
+		long IDValue = status.getId();
+		TweetHash.add(IDValue);
+		
+		if(TweetHash.size() == 5000)
+		{
+			//Empty the Hash
+			TweetHash.clear();
+		}
+		
+		if (TweetHash.contains(IDValue))
+		{
+			System.out.print("In Hash");
+		}
+		else
+		{
+			TweetHash.add(IDValue);
+			System.out.print("Not in Hash");
+			
+		}
+		
+		return false;
+	}
+	
+	
 	
 	
 	@Override
@@ -39,61 +116,24 @@ public class TweetListener implements StatusListener {
     @Override
     public void onStatus(Status status) 
     {
-    	/*
-    	while (true){    	
-    	System.out.println(TweetList.size());
-    	if (TweetList.size() >= 10)
-    	{
-    		ObjectMapper objectMapper = new ObjectMapper();
-    		//Set pretty printing of json
-        	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        	String arrayToJson = null;
-			try {
-				arrayToJson = objectMapper.writeValueAsString(TweetList);
-			} catch (JsonProcessingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        	System.out.println("1. Convert List of person objects to JSON :");
-        	System.out.println(arrayToJson);
-    		
-		}
-		*/
-
-    	String A = status.getUser().getScreenName();
-    	String B = status.getText();
-    	GeoLocation C = status.getGeoLocation();
-    	Tweet obj = new Tweet(A, B, C );
-    	TweetList.add(obj);
-    	System.out.println(TweetList.size());
-    	if (TweetList.size() >= 10)
-    	{
-    		ObjectMapper objectMapper = new ObjectMapper();
-    		//Set pretty printing of json
-        	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        	String arrayToJson = null;
-			try {
-				arrayToJson = objectMapper.writeValueAsString(TweetList);
-			} catch (JsonProcessingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			ObjectWriter writer = objectMapper.writer(new DefaultPrettyPrinter());
-			try {
-				writer.writeValue(new File("Lman.txt"), arrayToJson);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-
-			
-        	System.out.println("1. Convert List of person objects to JSON :");
-        	System.out.println(arrayToJson);
-    		
-		}
     	
-    	System.out.println("@" + status.getUser().getScreenName() + " - " + status.getText() + status.getGeoLocation() );
+    	//Get the Tweet 
+    	//Make Sure it has a GeoLocation
+    	if(status.getGeoLocation() != null && !(DuplicateTweetCheck(status)))
+    	{
+    		AddTweetToList (status);
+    	}
+    	
+    	 System.out.println(TweetList.size());
+    	 
+    	//50000 will give a 10MB file
+    	//250 for debugging Purposes
+    	if (TweetList.size() == 250)
+    	{
+    		PrintTweetsToFile ();
+    	}
+    	
+    	//System.out.println("@" + status.getUser().getScreenName() + " - " + status.getText() + status.getGeoLocation() );
 	
       
     }

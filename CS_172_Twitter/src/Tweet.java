@@ -6,13 +6,15 @@ public class Tweet
 	 public String UserName;
 	 public String Text;
 	 public GeoLocation Location;
+	 public long ID;
 	 
 	 //Basic Constructor
-	 public Tweet ( String A, String B, GeoLocation C ) 
+	 public Tweet ( String A, String B, GeoLocation C,long D ) 
 	 {
 		 UserName = A;
 		 Text = B;
 		 Location = C;
+		 ID = D;
 	        
 	  }
 	 
