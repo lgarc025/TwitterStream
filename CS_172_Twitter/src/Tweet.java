@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 import twitter4j.GeoLocation;
 
 public class Tweet 
@@ -7,6 +10,7 @@ public class Tweet
 	 public String Text;
 	 public GeoLocation Location;
 	 public long ID;
+	 public List <String> URLTitle;
 	 
 	 //Basic Constructor
 	 public Tweet ( String A, String B, GeoLocation C,long D ) 
@@ -15,7 +19,7 @@ public class Tweet
 		 Text = B;
 		 Location = C;
 		 ID = D;
-	        
+		 URLTitle = new ArrayList<String>(); 
 	  }
 	 
 }

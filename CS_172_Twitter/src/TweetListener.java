@@ -6,6 +6,9 @@ import java.util.List;
 
 import javax.swing.JSeparator;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -29,12 +32,15 @@ import java.util.HashSet;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.*;
+import java.util.regex.*;
+
 
 public class TweetListener implements StatusListener { 
 	
 	
 	public List <Tweet> TweetList = new ArrayList<Tweet>();
-	public HashSet TweetHash = new HashSet();
+	public HashSet<Long> TweetHash = new HashSet<Long>();
 	
 	public void AddTweetToList (Status status)
 	{
@@ -44,6 +50,38 @@ public class TweetListener implements StatusListener {
     	long D = status.getId();
     	
     	Tweet obj = new Tweet(A, B, C, D );
+    	
+    	//Split Text into Tokens
+		StringTokenizer TweetSplit = new StringTokenizer(B);
+	    //Find all parts that begin with "http"
+		while (TweetSplit.hasMoreTokens())
+		{
+	    	 String Temp = TweetSplit.nextToken();
+	    	 if(Temp.startsWith("http"))
+	    	 {
+	    		Document doc = null;
+	 			try {
+	 				doc = Jsoup.connect(Temp).get();
+	 			} catch (IOException e) {
+	 				// TODO Auto-generated catch block
+	 				//e.printStackTrace();
+	 			} 
+	 			
+	 			String title = null;
+	 			
+	 			if (doc != null)
+	 			{
+	 				title = doc.title();
+	 			}
+	 			
+	 			if(title != null)
+	 			{
+	 				obj.URLTitle.add(title);
+	 				System.out.println(title);
+	 			}
+	    	 }
+	         
+	     }
     	TweetList.add(obj);
 	}
 	
@@ -93,20 +131,18 @@ public class TweetListener implements StatusListener {
 		
 		if (TweetHash.contains(IDValue))
 		{
-			System.out.print("In Hash");
+			//System.out.print("In Hash");
 			return true;
 		}
 		else
 		{
 			TweetHash.add(IDValue);
-			System.out.print("Not in Hash");
+			//System.out.print("Not in Hash");
 			
 		}
 		
 		return false;
 	}
-	
-	
 	
 	
 	@Override
@@ -123,9 +159,8 @@ public class TweetListener implements StatusListener {
     	if(status.getGeoLocation() != null && !(DuplicateTweetCheck(status)))
     	{
     		AddTweetToList (status);
-    	}
     	
-    	 System.out.println(TweetList.size());
+    	}
     	 
     	//50000 will give a 10MB file
     	//250 for debugging Purposes
