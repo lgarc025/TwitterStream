@@ -10,7 +10,8 @@ public class Tweet
 	 public String Text;
 	 public GeoLocation Location;
 	 public long ID;
-	 public List <String> URLTitle;
+	 public String [] URL_Titles = new String [5];
+	 public int NumURLTitles;
 	 
 	 //Basic Constructor
 	 public Tweet ( String A, String B, GeoLocation C,long D ) 
@@ -19,7 +20,7 @@ public class Tweet
 		 Text = B;
 		 Location = C;
 		 ID = D;
-		 URLTitle = new ArrayList<String>(); 
+		 NumURLTitles = 0;
 	  }
 	 
 }

@@ -9,6 +9,8 @@ import javax.swing.JSeparator;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -76,14 +78,16 @@ public class TweetListener implements StatusListener {
 	 			
 	 			if(title != null)
 	 			{
-	 				obj.URLTitle.add(title);
-	 				System.out.println(title);
+	 				obj.URL_Titles[obj.NumURLTitles] = title;
+	 				obj.NumURLTitles++;
+	 				//System.out.println(title);
 	 			}
 	    	 }
 	         
 	     }
     	TweetList.add(obj);
 	}
+	
 	
 	public void PrintTweetsToFile ()
 	{
@@ -94,8 +98,10 @@ public class TweetListener implements StatusListener {
 	 	  
 	 	   
 		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 		//Set pretty printing of json
     	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+    	objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
     	String arrayToJson = null;
 		try {
 				arrayToJson = objectMapper.writeValueAsString(TweetList);
@@ -164,7 +170,7 @@ public class TweetListener implements StatusListener {
     	 
     	//50000 will give a 10MB file
     	//250 for debugging Purposes
-    	if (TweetList.size() == 250)
+    	if (TweetList.size() == 2500)
     	{
     		PrintTweetsToFile ();
     	}
