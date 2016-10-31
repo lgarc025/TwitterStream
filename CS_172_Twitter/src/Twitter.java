@@ -28,10 +28,11 @@ public class Twitter {
 		TweetListener listener = new TweetListener(); 
 		twitterStream.addListener(listener);
 		twitterStream.sample("en");
-		twitterStream.sample();
+		//twitterStream.sample();
 		
-		double[][] boundingbox = {{-124.47,24.0},{-66.56,49.3843}}; 
-		FilterQuery filter = new FilterQuery(); filter.locations(boundingbox);
+		double[][] boundingbox = {{-117.92,33.64},{-71.15,42.16}}; 
+		FilterQuery filter = new FilterQuery(); 
+		filter.locations(boundingbox);
 		twitterStream.filter(filter);
 	}
 }

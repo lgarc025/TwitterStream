@@ -1,3 +1,4 @@
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,6 +26,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 import twitter4j.GeoLocation;
+import twitter4j.JSONArray;
+import twitter4j.JSONException;
 import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
@@ -44,14 +47,17 @@ public class TweetListener implements StatusListener {
 	public List <Tweet> TweetList = new ArrayList<Tweet>();
 	public HashSet<Long> TweetHash = new HashSet<Long>();
 	
+	public StringBuffer Buffer = new StringBuffer(1000000);
+	
 	public void AddTweetToList (Status status)
 	{
 		String A = status.getUser().getScreenName();
     	String B = status.getText();
     	GeoLocation C = status.getGeoLocation();
     	long D = status.getId();
+    	String F = status.getCreatedAt().toString();
     	
-    	Tweet obj = new Tweet(A, B, C, D );
+    	Tweet obj = new Tweet(A, B, C, D, F);
     	
     	//Split Text into Tokens
 		StringTokenizer TweetSplit = new StringTokenizer(B);
@@ -59,6 +65,23 @@ public class TweetListener implements StatusListener {
 		while (TweetSplit.hasMoreTokens())
 		{
 	    	 String Temp = TweetSplit.nextToken();
+	    	 if(Temp.startsWith("#"))
+	    	 {
+	    		 ///*
+	    		 obj.NumHashTags++;
+	    		 String [] TempArray = new String [obj.NumHashTags];
+	    		 for (int i = 0; i < obj.NumHashTags - 1; i++ )
+	    		 {
+	    			 TempArray[i] = obj.HashTags[i];
+	    		 }
+	    		 
+	    		 //System.out.println(Temp);
+	    		 TempArray[obj.NumHashTags - 1] = Temp;
+	    		 obj.HashTags = TempArray;
+	    		 //*/
+	    		 //System.out.println(Temp);
+	    	 }
+	    	 
 	    	 if(Temp.startsWith("http"))
 	    	 {
 	    		Document doc = null;
@@ -78,8 +101,17 @@ public class TweetListener implements StatusListener {
 	 			
 	 			if(title != null)
 	 			{
-	 				obj.URL_Titles[obj.NumURLTitles] = title;
 	 				obj.NumURLTitles++;
+		    		String [] TempArray1 = new String [obj.NumURLTitles];
+		    		 for (int i = 0; i < obj.NumURLTitles - 1; i++ )
+		    		 {
+		    			 TempArray1[i] = obj.URL_Titles[i];
+		    		 }
+		    		 
+		    		 //System.out.println(Temp);
+		    		 TempArray1[obj.NumURLTitles - 1] = title;
+		    		 obj.URL_Titles = TempArray1;
+	
 	 				//System.out.println(title);
 	 			}
 	    	 }
@@ -95,27 +127,40 @@ public class TweetListener implements StatusListener {
 	 	//get current date time with Date()
 	 	Date date = new Date();
 	 	String CurDate = dateFormat.format(date);
-	 	  
 	 	   
 		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-		//Set pretty printing of json
-    	objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-    	objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
     	String arrayToJson = null;
-		try {
-				arrayToJson = objectMapper.writeValueAsString(TweetList);
+    	Buffer = new StringBuffer(1000000);
+    	Buffer.append('[');
+    	Buffer.append('\n');
+		try {	
+			for(int i = 0; i < TweetList.size(); i++)
+			{
+				
+				arrayToJson = objectMapper.writeValueAsString(TweetList.get(i));
+				Buffer.append(arrayToJson);
+				Buffer.append(',');
+				Buffer.append('\n');
+			}
+			
+			Buffer.append(']');
+				
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		ObjectWriter writer = objectMapper.writer(new DefaultPrettyPrinter());
+		
+		File file = new File("Twitter_"+"File_"+CurDate+".txt");
 		try {
-			writer.writeValue(new File("Twitter_"+"File_"+CurDate+".txt"), arrayToJson);
+			FileWriter fw = new FileWriter(file.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write(Buffer.toString());
+			bw.close();
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}		
 		
 		//Empty the List After Written To File
 		TweetList.clear();
@@ -162,18 +207,29 @@ public class TweetListener implements StatusListener {
     	
     	//Get the Tweet 
     	//Make Sure it has a GeoLocation
-    	if(status.getGeoLocation() != null && !(DuplicateTweetCheck(status)))
+    	///*
+    	if(status.getGeoLocation() != null &&!(DuplicateTweetCheck(status)))
     	{
     		AddTweetToList (status);
     	
     	}
+    	//*/
+    	
+    	
+    //	if(!(DuplicateTweetCheck(status)))
+    	//{
+    	//	AddTweetToList (status);
+    	
+    //	}
+    
     	 
     	//50000 will give a 10MB file
     	//250 for debugging Purposes
-    	if (TweetList.size() == 2500)
+    	if (TweetList.size() == 30000)
     	{
     		PrintTweetsToFile ();
     	}
+    	System.out.println( TweetList.size() );
     	
     	//System.out.println("@" + status.getUser().getScreenName() + " - " + status.getText() + status.getGeoLocation() );
 	
